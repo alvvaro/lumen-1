@@ -17,6 +17,7 @@ import { TagsPage } from "./pages/tags"
 import { ErrorBoundary, FallbackProps } from "react-error-boundary"
 import { Button } from "./components/button"
 import { Markdown } from "./components/markdown"
+import { AIDevtoolsProvider } from "ai-devtools"
 
 function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
   return (
@@ -29,27 +30,29 @@ function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <ErrorBoundary FallbackComponent={ErrorFallback}>
-      <Tooltip.Provider>
-        <NewNoteDialog.Provider>
-          <NewNoteDialog />
-          <ThemeColor />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/file" element={<FilePage />} />
-              <Route path="/" element={<Root />}>
-                <Route index element={<NotesPage />} />
-                <Route path=":id" element={<NotePage />} />
-                <Route path="tags" element={<TagsPage />} />
-                <Route path="tags/:name" element={<TagPage />} />
-                <Route path="dates/:date" element={<DatePage />} />
-                <Route path="settings" element={<SettingsPage />} />
-              </Route>
-            </Routes>
-          </BrowserRouter>
-        </NewNoteDialog.Provider>
-      </Tooltip.Provider>
-    </ErrorBoundary>
+    <AIDevtoolsProvider dev={import.meta.env.DEV}>
+      <ErrorBoundary FallbackComponent={ErrorFallback}>
+        <Tooltip.Provider>
+          <NewNoteDialog.Provider>
+            <NewNoteDialog />
+            <ThemeColor />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/file" element={<FilePage />} />
+                <Route path="/" element={<Root />}>
+                  <Route index element={<NotesPage />} />
+                  <Route path=":id" element={<NotePage />} />
+                  <Route path="tags" element={<TagsPage />} />
+                  <Route path="tags/:name" element={<TagPage />} />
+                  <Route path="dates/:date" element={<DatePage />} />
+                  <Route path="settings" element={<SettingsPage />} />
+                </Route>
+              </Routes>
+            </BrowserRouter>
+          </NewNoteDialog.Provider>
+        </Tooltip.Provider>
+      </ErrorBoundary>
+    </AIDevtoolsProvider>
   </React.StrictMode>,
 )
 
