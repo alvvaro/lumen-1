@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently -n vite,devtools vite ai-devtools",
+    "dev": "concurrently -n vite,ai-devtools vite ai-devtools",
     "dev:storybook": "storybook dev -p 6006",
     "build": "tsc && vite build",
     "build:service-worker": "workbox generateSW workbox.config.cjs",
@@ -94,7 +94,7 @@
     "@typescript-eslint/eslint-plugin": "^5.37.0",
     "@typescript-eslint/parser": "^5.37.0",
     "@vitejs/plugin-react": "^4.0.0",
-    "ai-devtools": "^0.11.0",
+    "ai-devtools": "^0.14.0",
     "autoprefixer": "^10.4.8",
     "benchmark": "^2.1.4",
     "c8": "^7.12.0",
