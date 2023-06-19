@@ -43,7 +43,7 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
                   <Route index element={<NotesPage />} />
                   <Route path=":id" element={<NotePage />} />
                   <Route path="tags" element={<TagsPage />} />
-                  <Route path="tags/:name" element={<TagPage />} />
+                  <Route path="tags/*" element={<TagPage />} />
                   <Route path="dates/:date" element={<DatePage />} />
                   <Route path="settings" element={<SettingsPage />} />
                 </Route>
@@ -59,7 +59,7 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
 async function registerServiceWorker() {
   if ("serviceWorker" in navigator) {
     try {
-      console.log("Registering service worker...")
+      console.log("Registering service worker…")
       const registration = await navigator.serviceWorker.register("/service-worker.js")
       console.log("Service worker registered:", registration)
     } catch (error) {

@@ -1,8 +1,9 @@
 import clsx from "clsx"
 import React from "react"
 import { DraggableCore } from "react-draggable"
+import { DropdownMenu } from "./dropdown-menu"
 import { IconButton } from "./icon-button"
-import { CloseIcon16 } from "./icons"
+import { CloseIcon16, MoreIcon16 } from "./icons"
 import { PanelContext } from "./panels"
 
 type PanelProps = {
@@ -11,13 +12,27 @@ type PanelProps = {
   description?: string
   icon?: React.ReactNode
   children?: React.ReactNode
+  actions?: Array<{
+    label: string
+    disabled?: boolean
+    icon?: React.ReactNode
+    onSelect?: () => void
+  }>
   onClose?: () => void
 }
 
 const MIN_WIDTH = 512
 const MAX_WIDTH = Number.MAX_SAFE_INTEGER
 
-export function Panel({ id, title, description, icon, children, onClose }: PanelProps) {
+export function Panel({
+  id,
+  title,
+  description,
+  icon,
+  children,
+  actions = [],
+  onClose,
+}: PanelProps) {
   const [width, setWidth] = React.useState(MIN_WIDTH)
   const panelRef = React.useRef<HTMLDivElement>(null)
   const panel = React.useContext(PanelContext)
@@ -124,7 +139,7 @@ export function Panel({ id, title, description, icon, children, onClose }: Panel
         />
       </div>
       {/* translateZ(0) fixes a bug in Safari where the scrollbar would appear underneath the sticky header */}
-      <div className="flex h-full scroll-pt-[4.5rem] scroll-pb-4 flex-col overflow-auto coarse:[-webkit-transform:translateZ(0)]">
+      <div className="flex h-full scroll-pb-4 scroll-pt-[4.5rem] flex-col overflow-auto coarse:[-webkit-transform:translateZ(0)]">
         <div
           className={
             "sticky top-0 z-10 flex h-[3.5rem] shrink-0 items-center justify-between gap-2 border-b border-border-secondary bg-gradient-to-b from-bg-inset to-bg-inset-backdrop p-4 backdrop-blur-md"
@@ -139,11 +154,34 @@ export function Panel({ id, title, description, icon, children, onClose }: Panel
               ) : null}
             </div>
           </div>
-          {onClose ? (
-            <IconButton aria-label="Close panel" shortcut={["⌘", "X"]} onClick={() => onClose()}>
-              <CloseIcon16 />
-            </IconButton>
-          ) : null}
+          <div className="flex gap-2">
+            {actions.length > 0 ? (
+              <DropdownMenu modal={false}>
+                <DropdownMenu.Trigger asChild>
+                  <IconButton aria-label="Panel actions" disableTooltip>
+                    <MoreIcon16 />
+                  </IconButton>
+                </DropdownMenu.Trigger>
+                <DropdownMenu.Content align="end">
+                  {actions.map(({ icon, label, disabled, onSelect }) => (
+                    <DropdownMenu.Item
+                      key={label}
+                      icon={icon}
+                      disabled={disabled}
+                      onSelect={onSelect}
+                    >
+                      {label}
+                    </DropdownMenu.Item>
+                  ))}
+                </DropdownMenu.Content>
+              </DropdownMenu>
+            ) : null}
+            {onClose ? (
+              <IconButton aria-label="Close panel" shortcut={["⌘", "X"]} onClick={() => onClose()}>
+                <CloseIcon16 />
+              </IconButton>
+            ) : null}
+          </div>
         </div>
         <div className="flex-grow">{children}</div>
       </div>
@@ -188,7 +226,7 @@ function ResizeHandle({
           ref={handleRef}
           data-resizing={isDragging}
           className={clsx(
-            "absolute top-0 bottom-0 right-0 z-20 w-1 cursor-col-resize delay-75",
+            "absolute bottom-0 right-0 top-0 z-20 w-1 cursor-col-resize delay-75",
             !isResizing && "hover:bg-bg-secondary",
             isResizing && "bg-border-focus",
           )}

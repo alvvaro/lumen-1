@@ -1,4 +1,5 @@
 import * as HoverCard from "@radix-ui/react-hover-card"
+import { isToday } from "date-fns"
 import { useAtomValue } from "jotai"
 import { selectAtom } from "jotai/utils"
 import qs from "qs"
@@ -7,10 +8,11 @@ import ReactMarkdown from "react-markdown"
 import { CodeProps } from "react-markdown/lib/ast-to-react"
 import remarkGfm from "remark-gfm"
 import { sentenceCase } from "sentence-case"
-import { notesAtom, tagsAtom } from "../global-atoms"
+import { notesAtom } from "../global-atoms"
 import { remarkDateLink } from "../remark-plugins/date-link"
 import { remarkNoteLink } from "../remark-plugins/note-link"
 import { remarkTagLink } from "../remark-plugins/tag-link"
+import { cx } from "../utils/cx"
 import {
   MONTH_NAMES,
   formatDate,
@@ -20,7 +22,6 @@ import {
   toDateStringUtc,
 } from "../utils/date"
 import { parseFrontmatter } from "../utils/parse-frontmatter"
-import { pluralize } from "../utils/pluralize"
 import { useSearchNotes } from "../utils/use-search-notes"
 import { Card } from "./card"
 import { FilePreview } from "./file-preview"
@@ -317,6 +318,7 @@ function FrontmatterValue({ entry: [key, value] }: { entry: [string, unknown] })
       const nextBirthday = getNextBirthday(new Date(year ?? 0, month, day))
       const nextBirthdayString = toDateString(nextBirthday)
       const nextAge = year ? nextBirthday.getUTCFullYear() - year : null
+      const isBirthdayToday = isToday(nextBirthday)
 
       return (
         <span>
@@ -332,9 +334,14 @@ function FrontmatterValue({ entry: [key, value] }: { entry: [string, unknown] })
           <span className="text-text-secondary">
             {" · "}
             <Link className="link" target="_blank" to={`/dates/${nextBirthdayString}`}>
-              {nextAge ? withSuffix(nextAge) : "Next"} birthday
+              {nextAge
+                ? `${withSuffix(nextAge)} birthday`
+                : isBirthdayToday
+                ? "Birthday"
+                : "Next birthday"}
             </Link>{" "}
-            is {formatDateDistance(toDateStringUtc(nextBirthday)).toLowerCase()}
+            is {formatDateDistance(toDateStringUtc(nextBirthday)).toLowerCase()}{" "}
+            {isBirthdayToday ? "🎂" : null}
           </span>
         </span>
       )
@@ -396,8 +403,21 @@ function Link(props: React.ComponentPropsWithoutRef<"a">) {
     )
   }
 
-  // eslint-disable-next-line jsx-a11y/anchor-has-content
-  return <a target="_blank" rel="noopener noreferrer" {...props} />
+  console.log(props.children)
+
+  return (
+    // eslint-disable-next-line jsx-a11y/anchor-has-content
+    <a
+      target="_blank"
+      rel="noopener noreferrer"
+      {...props}
+      className={cx(
+        // Break long links
+        String(props.children).startsWith("http") && "[word-break:break-all]",
+        props.className,
+      )}
+    />
+  )
 }
 
 function Image(props: React.ComponentPropsWithoutRef<"img">) {
@@ -496,20 +516,27 @@ type TagLinkProps = {
 
 function TagLink({ name }: TagLinkProps) {
   const Link = useLink()
-  const noteCountAtom = React.useMemo(
-    () => selectAtom(tagsAtom, (tags) => tags[name]?.length ?? 0),
-    [name],
-  )
-  const noteCount = useAtomValue(noteCountAtom)
   return (
-    <Tooltip>
-      <Tooltip.Trigger asChild>
-        <Link target="_blank" className="text-text-secondary" to={`/tags/${name}`}>
-          #{name}
-        </Link>
-      </Tooltip.Trigger>
-      <Tooltip.Content>{pluralize(noteCount, "note")}</Tooltip.Content>
-    </Tooltip>
+    <span className="text-text-secondary">
+      #
+      {name.split("/").map((part, i) => {
+        return (
+          <React.Fragment key={i}>
+            {i > 0 && <span>/</span>}
+            <Link
+              target="_blank"
+              className="text-text-secondary"
+              to={`/tags/${name
+                .split("/")
+                .slice(0, i + 1)
+                .join("/")}`}
+            >
+              {part}
+            </Link>
+          </React.Fragment>
+        )
+      })}
+    </span>
   )
 }
 
